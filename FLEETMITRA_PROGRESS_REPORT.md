@@ -1,5 +1,27 @@
 # FleetMitra progress report — 30 October 2026
 
+## Port 5000 dashboard mismatch — actual application fix
+
+The earlier audit checked port 5004 and did not identify the stale server on port 5000. The database distinction was real but did **not** explain the outdated interface. This investigation reproduced the user's exact screen at port 5000 before making changes.
+
+**Confirmed cause:** Windows had two LISTENING sockets at 127.0.0.1:5000, owned by Python PIDs 28500 and 9532. PID 28500 started at 19:19, before the final feature changes. A fresh uncached HTTP request returned the old cached HTML with Demo Scenarios and without navigation_geometry.js, workspace.js, search.js or journey_extensions.js. The same server served the current map.js from disk. `/drivers` returned 404. Browser errors were `NavigationGeometry is not defined` and a null `addEventListener` in review.js. Initialization stopped before telemetry polling, leaving Connecting / NO DATA. This was a stale-process/template and mixed-asset problem, not merely a browser cache or empty database.
+
+Both verified port-5000 listeners were stopped; other ports were left alone. No database was reset, copied over or deleted. The corrected application was launched with the exact command `python app.py` from D:\College Projects\CBP IOT\Fleet Mitra. Startup printed the venv interpreter and original instance/fleet_mitra.sqlite3 path. The system Python lacks Flask, so the bare command now delegates to the existing project venv automatically.
+
+Changes:
+
+- `app.py`: retain Flask/create_app and all blueprints; use a threaded Werkzeug server with address reuse disabled and Windows SO_EXCLUSIVEADDRUSE. Reserve the port before database initialization; a second launch fails before touching trip recovery. Print project/interpreter/database/URL. Enable Jinja template reload, content-hash static URL versions, and cache revalidation for HTML/static responses. Backend Python changes still require a restart.
+- `templates/index.html`: Drivers and Trip History links exist in initial HTML as well as the enhanced sidebar; JavaScript-disabled guidance added.
+- `templates/review_controls.html`: initial heading is Plan your journey, not Operations control. Current template already excludes Demo Scenarios; it now actually reaches port 5000. Advanced coordinates remain in the collapsed Exact coordinates disclosure after initialization.
+- `tests/test_dashboard_delivery.py`: four new regression tests cover the complete dependency-ordered/versioned script bundle, no scenario/operations headings, template reload, asset-content invalidation and duplicate listener rejection.
+- `README.md`, this report and `docs/port-5000-fixed.png`: updated diagnosis and fresh browser evidence.
+
+Verification: **204 passed, 0 failed, in 28.76 seconds** (all previous 200 retained). `git diff --check` passed. A second real `python app.py` invocation exited with code 1 and an explicit port-in-use message. Fresh port-5000 browser displayed Backend connected, map-first layout, Home in map and planner, Drivers, search fields, history and Change Destination. Home centered the map; Photon returned Uppal suggestions and selection worked; the dynamic-destination panel opened and cancelled; Drivers/Add Driver form loaded; history displayed the existing trip. Browser error log was empty. Screenshot: [corrected port 5000](docs/port-5000-fixed.png).
+
+Original Trip #1 remains ACTIVE with 416.2926711184512 m and its original telemetry. SQLite integrity is ok. The default database still has zero drivers; none were fabricated or copied from QA. Its last GPS sample is from October 27, so GPS data stale is an honest telemetry status, distinct from backend disconnection. This audit did not stop/complete that legacy trip or submit a new destination; full mutation workflows remain covered by the regression suite and earlier recorded browser verification. No hardware verification is claimed.
+
+Launch from the project directory with `python app.py`, then open http://127.0.0.1:5000. One corrected server is left running. Local commit only; no GitHub push.
+
 ## Saved-work audit — current findings
 
 The final implementation is saved in this exact project and was already committed as f59f113b960a75f2e8795b4a3bee765aaf35b9d0 on main. Initial working tree was clean. Earlier no-Git statements below are historical and superseded. See [FLEETMITRA_AUDIT_REPORT.md](FLEETMITRA_AUDIT_REPORT.md) for requirement coverage, exact changed files and database distinctions. Fresh suite: **200 passed, 0 failed, 31.42 seconds**. A new browser trip (#4) completed after automatic rerouting and a destination change; all saved rows across six trip/driver tables survived an actual Flask restart unchanged. No application code or tests needed modification. The audit updates documentation and adds a browser screenshot, then makes a local commit without pushing.

@@ -34,7 +34,9 @@
   <a class="brand" href="/" aria-label="FleetMitra home"><span class="brand-mark">f<span>m</span></span><span>FleetMitra<span class="brand-sub">FLEET INTELLIGENCE</span></span></a>
   <div class="nav-heading">WORKSPACE</div>
   <nav aria-label="Main navigation">
-    <a class="nav-link active" href="#main"><svg><use href="#i-grid"/></svg>Live overview<span class="live-dot"></span></a>
+    <a class="nav-link active" href="#main"><svg><use href="#i-grid"/></svg>Dashboard<span class="live-dot"></span></a>
+    <a class="nav-link" href="/drivers">Drivers</a>
+    <a class="nav-link" href="/history">Trip History</a>
     <a class="nav-link" href="#trip-controls"><svg><use href="#i-route"/></svg>Trip manager</a>
     <a class="nav-link" href="#geofence-controls"><svg><use href="#i-fence"/></svg>Geofences</a>
     <a class="nav-link" href="#history"><svg><use href="#i-clock"/></svg>Activity & history</a>
@@ -45,6 +47,7 @@
 <div class="workspace">
   <header class="topbar"><span>Workspace <span class="slash">/</span> <strong>Live overview</strong></span><span class="connection" id="connection" role="status"><span class="status-dot"></span>Connecting…</span></header>
   <main id="main">
+    <noscript><p class="notice error">JavaScript is required for live navigation. Enable it and reload. Drivers and Trip History are available from the sidebar.</p></noscript>
     <section class="page-heading"><div><div class="eyebrow">SMART VEHICLE TRACKING SYSTEM</div><h1>Fleet overview<span class="heading-dot">.</span></h1><p>A clear view of every move, from start to destination.</p></div><div class="heading-meta"><span class="badge source-badge" id="source">NO DATA</span><span id="today" class="today"></span></div></section>
     <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
     {% include 'review_controls.html' %}
