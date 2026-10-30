@@ -14,13 +14,15 @@ Set-Location 'D:\College Projects\CBP IOT\Fleet Mitra'
 
 Open [FleetMitra](http://127.0.0.1:5000). Use one Flask process per database. No Node build or separate GPS sender is needed for dashboard simulation. For a new installation, create the environment with `python -m venv venv` first. Stop Flask with Ctrl+C.
 
-The isolated final feature review is running on [port 5004](http://127.0.0.1:5004), with a clearly labelled sample driver and real saved simulation records:
+Launch the isolated final feature review on [port 5004](http://127.0.0.1:5004), with a clearly labelled sample driver and real saved simulation records:
 
 ```powershell
 $env:FLEET_DATABASE='instance/final-features-qa.sqlite3'
 $env:FLEET_PORT='5004'
 .\venv\Scripts\python.exe app.py
 ```
+
+The default instance/fleet_mitra.sqlite3 and review instance/final-features-qa.sqlite3 are independent datasets, not different software versions. At audit start, the default had zero drivers and one trip; the review had one sample driver and three trips. Register a driver in the default database or explicitly launch the review configuration to see its records. No records are automatically copied between databases.
 
 Use a new PowerShell session for the default database/port. Existing operator databases were retained. Do not delete `instance/*.sqlite3` or `instance/driver-profiles.key` when resetting a simulation.
 
@@ -78,6 +80,6 @@ The actual browser workflow registered/assigned a sample driver, searched endpoi
 
 A second real browser trip verified the expanded live Driver Information panel, same-destination no-op, manual map selection, two changes while PAUSED (manual destination → exact Home), Follow remaining off, and STOPPED persistence under the same trip/driver. A 40 m provider-snap issue was found, safely rejected, fixed with the documented exact-segment options and successfully retested. Pausing does not accumulate logical movement time.
 
-Routing, geocoding and map tiles still depend on provider/network availability; public services are not production SLAs. Three road alternatives are not guaranteed. Physical ESP32/GPS, physical high-DPI/touch screens and speaker audibility remain untested. Some edge cases use deterministic provider mocks in tests rather than live services. Historical paths are persisted observations, not regenerated routes. The folder is not a Git repository; changes are saved locally, with no commit or push.
+Routing, geocoding and map tiles still depend on provider/network availability; public services are not production SLAs. Three road alternatives are not guaranteed. Physical ESP32/GPS, physical high-DPI/touch screens and speaker audibility remain untested. Some edge cases use deterministic provider mocks in tests rather than live services. Historical paths are persisted observations, not regenerated routes. The folder is now a Git repository on main. The complete implementation was already committed as f59f113. See FLEETMITRA_AUDIT_REPORT.md for the fresh verification and local audit commit; this audit does not push to GitHub.
 
 
