@@ -1,0 +1,12 @@
+/* Debounced Photon suggestions with saved Home and keyboard selection. */
+(() => {
+  for(const name of ['start','destination']){
+    const input=document.getElementById('search-'+name),results=document.getElementById('results-'+name),status=document.getElementById('search-status-'+name);
+    let timer,controller,items=[],active=-1,revision=0;
+    function close(){items=[];active=-1;results.replaceChildren();input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');}
+    function select(item){window.FleetPlanner.setPoint(name,item.lat,item.lon,item.label);input.value=item.label;FleetMap.goTo(item);close();status.textContent='Location selected';}
+    function render(list){close();items=list;list.forEach((item,i)=>{const button=document.createElement('button');button.type='button';button.textContent=item.label;button.className='search-result';button.id=`suggestion-${name}-${i}`;button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.onclick=()=>select(item);results.append(button);});input.setAttribute('aria-expanded',String(list.length>0));status.textContent=list.length?'Choose a result · ↑ ↓ Enter':'No results. Try another name or select on the map.';}
+    input.oninput=()=>{revision++;const current=revision;clearTimeout(timer);controller?.abort();close();const query=input.value.trim();if(query.length<3){status.textContent='Type at least 3 characters';return;}status.textContent='Searching…';timer=setTimeout(async()=>{controller=new AbortController();try{const response=await fetch('/api/search?q='+encodeURIComponent(query),{signal:controller.signal});const data=await response.json();if(current!==revision)return;if(!response.ok)throw new Error(data.error);render(data.results);}catch(error){if(error.name!=='AbortError'&&current===revision)status.textContent=error.message||'Search unavailable. Select on the map.';}},650);};
+    input.onkeydown=event=>{if(event.key==='Escape')return close();if(['ArrowDown','ArrowUp'].includes(event.key)&&items.length){event.preventDefault();active=(active+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;[...results.children].forEach((node,i)=>node.setAttribute('aria-selected',String(i===active)));input.setAttribute('aria-activedescendant',`suggestion-${name}-${active}`);}if(event.key==='Enter'&&active>=0){event.preventDefault();select(items[active]);}};
+  }
+})();

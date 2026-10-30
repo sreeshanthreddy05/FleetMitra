@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Drivers · FleetMitra</title><link rel="stylesheet" href="{{url_for('static',filename='css/history.css')}}"><link rel="stylesheet" href="{{url_for('static',filename='css/drivers.css')}}"><script defer src="{{url_for('static',filename='js/drivers.js')}}"></script></head>
+<body><header><a class="brand" href="/">FleetMitra <small>FLEET OPERATIONS</small></a><nav><a href="/">Live Tracking</a><a href="/drivers" aria-current="page">Drivers</a><a href="/history">Trip History</a></nav></header><main>
+<div class="title"><div><p class="eyebrow">PEOPLE BEHIND EVERY JOURNEY</p><h1>Drivers</h1><p>Manage availability, vehicle assignments and saved journeys.</p></div><button id="add-driver" class="button primary">Add Driver</button></div>
+<p id="driver-message" role="status" aria-live="polite"></p>
+<section id="driver-editor" class="driver-card" hidden><div class="title"><h2 id="editor-title">Add Driver</h2><button type="button" id="close-editor" class="button">Cancel</button></div>
+<p>Only a name is required. Use fictional data for your review. Private fields are encrypted; license and phone are masked in lists.</p>
+<form id="driver-form"><div class="driver-fields">
+<label>Full Name *<input id="full_name" required maxlength="100" autocomplete="off"></label>
+<label>Date of Birth<input id="date_of_birth" type="date"><small id="calculated-age">Age is calculated from date of birth.</small></label>
+<label>Gender<select id="gender"><option value="">Not specified</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option></select></label>
+<label>Phone Number<input id="phone" type="tel" maxlength="22" autocomplete="off"></label>
+<label>Email Address<input id="email" type="email" maxlength="100" autocomplete="off"></label>
+<label>Residential Address<textarea id="address" maxlength="500" rows="2"></textarea></label>
+<label>Driving License Number<input id="license_number" maxlength="40" autocomplete="off"></label>
+<label>License Expiry Date<input id="license_expiry" type="date"></label>
+<label>Years of Driving Experience<input id="experience_years" type="number" min="0" max="70" step="0.5" value="0" required></label>
+<label>Date Joined<input id="date_joined" type="date"></label>
+<label class="check"><input id="is_sample" type="checkbox">Fictional sample profile</label><label class="check"><input id="is_active" type="checkbox" checked>Active driver</label>
+</div><div class="driver-actions"><button type="button" id="sample-driver" class="button">Use Fictional Sample Name</button><button id="save-driver" class="button primary">Save Driver</button></div></form></section>
+<section class="filters"><label>Search Drivers<input id="driver-query" type="search" placeholder="Name or driver ID"></label><label>Status<select id="driver-status"><option value="">All statuses</option><option>Available</option><option>On Trip</option><option>Inactive</option></select></label><button id="filter-drivers" class="button primary">Search</button></section>
+<section class="records"><div class="table-scroll"><table><thead><tr><th>Driver ID</th><th>Name</th><th>Assigned vehicle</th><th>Phone</th><th>Experience</th><th>Status</th><th>Completed trips</th><th>Actions</th></tr></thead><tbody id="drivers-table"></tbody></table></div></section>
+<section id="driver-detail" class="driver-card" hidden><div class="title"><h2 id="driver-detail-title"></h2><a id="driver-history" class="button primary">View Complete Trip History</a></div><dl id="driver-summary"></dl><div id="driver-statistics" class="detail-metrics"></div><button id="show-personal" class="button">View Personal Details</button><dl id="personal-details" hidden></dl><div class="driver-actions"><label>Vehicle<select id="assignment-vehicle"><option>FM01</option></select></label><button id="assign-driver" class="button primary">Assign Vehicle</button><button id="unassign-driver" class="button">Unassign Vehicle</button><button id="edit-driver" class="button">Edit Driver</button><button id="activate-driver" class="button">Deactivate Driver</button></div></section>
+</main></body></html>

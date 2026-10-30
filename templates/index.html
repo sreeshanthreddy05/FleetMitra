@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142c2c">
+  <title>FleetMitra · Smart Vehicle Tracking System</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%232b8060'/%3E%3Cpath d='M8 23V9h16M8 16h12' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/leaflet/leaflet.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script defer src="{{ url_for('static', filename='vendor/leaflet/leaflet.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/navigation_geometry.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/map.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/review.css') }}">
+  <script defer src="{{ url_for('static', filename='js/review.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/workspace.css') }}">
+  <script defer src="{{ url_for('static', filename='js/workspace.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/search.js') }}"></script>
+  <script defer src="{{ url_for('static', filename='js/journey_extensions.js') }}"></script>
+</head>
+<body>
+<svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M6 7v7a5 5 0 0 0 10 0V9a3 3 0 0 1 5-2M18 17v-5"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-fence" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h12v11H3zM15 10h3l3 4v3h-6"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+  <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 19a10 10 0 1 1 16 0M12 13l5-6M5 13h2M17 13h2M12 4v2"/><circle cx="12" cy="13" r="2"/></symbol>
+</svg>
+<a class="skip-link" href="#main">Skip to dashboard</a>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="FleetMitra home"><span class="brand-mark">f<span>m</span></span><span>FleetMitra<span class="brand-sub">FLEET INTELLIGENCE</span></span></a>
+  <div class="nav-heading">WORKSPACE</div>
+  <nav aria-label="Main navigation">
+    <a class="nav-link active" href="#main"><svg><use href="#i-grid"/></svg>Live overview<span class="live-dot"></span></a>
+    <a class="nav-link" href="#trip-controls"><svg><use href="#i-route"/></svg>Trip manager</a>
+    <a class="nav-link" href="#geofence-controls"><svg><use href="#i-fence"/></svg>Geofences</a>
+    <a class="nav-link" href="#history"><svg><use href="#i-clock"/></svg>Activity & history</a>
+  </nav>
+  <div class="sidebar-note"><span class="outline-badge">SOFTWARE PROTOTYPE</span><h3>Ready for the road.<br>Built for your demo.</h3><p>GPS simulator → Flask API → SQLite → live dashboard.</p><span class="hardware-note">Hardware integration prepared.<br>Physically untested.</span></div>
+  <div class="sidebar-footer"><span class="avatar">FM</span><div>Fleet workspace<small>Single vehicle · FM01</small></div></div>
+</aside>
+<div class="workspace">
+  <header class="topbar"><span>Workspace <span class="slash">/</span> <strong>Live overview</strong></span><span class="connection" id="connection" role="status"><span class="status-dot"></span>Connecting…</span></header>
+  <main id="main">
+    <section class="page-heading"><div><div class="eyebrow">SMART VEHICLE TRACKING SYSTEM</div><h1>Fleet overview<span class="heading-dot">.</span></h1><p>A clear view of every move, from start to destination.</p></div><div class="heading-meta"><span class="badge source-badge" id="source">NO DATA</span><span id="today" class="today"></span></div></section>
+    <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    {% include 'review_controls.html' %}
+    <section class="metrics" aria-label="Vehicle metrics">
+      <article class="metric"><div class="metric-label">Current speed<svg><use href="#i-speed"/></svg></div><div class="metric-value"><span id="speed">—</span><small>km/h</small></div><div class="metric-foot" id="motion">Waiting for GPS data</div></article>
+      <article class="metric"><div class="metric-label">Distance travelled<svg><use href="#i-route"/></svg></div><div class="metric-value"><span id="distance">—</span><small>km</small></div><div class="metric-foot" id="trip-status">No active trip</div></article>
+      <article class="metric"><div class="metric-label">Remaining distance<svg><use href="#i-pin"/></svg></div><div class="metric-value"><span id="remaining">—</span><small>km</small></div><div class="metric-foot" id="distance-method">Choose a destination to begin</div></article>
+      <article class="metric accent"><div class="metric-label">Estimated arrival<svg><use href="#i-clock"/></svg></div><div class="metric-value"><span id="eta">—</span><small id="eta-unit">min</small></div><div class="metric-foot" id="arrival">ETA unavailable</div></article>
+    </section>
+    <section class="tracking-grid" aria-label="Live vehicle tracking">
+      <article class="panel map-panel"><div class="panel-heading"><div><h2><span class="green-dot"></span>Live location</h2><p id="map-caption">FM01 · Waiting for GPS data…</p></div><button class="button subtle small" id="follow" type="button" aria-pressed="true">◎ Follow vehicle</button></div><div class="map-wrap"><div id="map" aria-label="Interactive live vehicle map"></div><button id="map-home-shortcut" class="button primary map-home">🏠 Home</button><div id="map-mode" class="map-hint" hidden></div><div class="map-legend"><span><i class="legend-vehicle"></i>Vehicle</span><span><i class="legend-fence"></i>Geofence</span><span><i class="legend-destination"></i>Destination</span></div></div><div class="map-footer"><span id="map-message">Select a destination or geofence center with the controls below.</span><span>Leaflet + OpenStreetMap</span></div></article>
+      <div class="tracking-side"><article class="panel vehicle-panel"><div class="panel-heading"><h2>Vehicle details</h2><span class="badge neutral" id="gps-state">WAITING</span></div><div class="vehicle-name"><span class="vehicle-icon"><svg><use href="#i-truck"/></svg></span><div><h3>FM01</h3><p>FleetMitra Demo Vehicle</p></div></div><dl class="detail-list"><div><dt>Latitude</dt><dd id="latitude">—</dd></div><div><dt>Longitude</dt><dd id="longitude">—</dd></div><div><dt>Last GPS update</dt><dd id="last-update">Waiting for GPS data…</dd></div><div><dt>Geofence</dt><dd id="geofence-summary">No geofence configured</dd></div></dl></article>
+      <article class="panel event-panel"><div class="panel-heading"><h2>Boundary events</h2><span class="count" id="event-count">0</span></div><div id="events" class="event-list"><p class="empty">No ENTER or EXIT events yet.<br>Transitions will appear here.</p></div></article></div>
+    </section>
+    <section class="controls-grid" aria-label="Trip and geofence controls">
+      <article class="panel" id="trip-controls"><div class="panel-heading"><div><h2><svg><use href="#i-route"/></svg>Trip manager</h2><p>Set your destination. We’ll take care of the numbers.</p></div><span class="step-number">01</span></div><form id="trip-form" class="control-form"><div class="form-top"><label>Destination label<input id="destination-label" name="destination_label" maxlength="100" placeholder="e.g. College campus" required></label><button type="button" class="text-button" id="demo-destination">Use demo destination ↗</button></div><div class="coordinate-fields"><label>Latitude<input id="destination-lat" name="destination_lat" type="number" step="any" min="-90" max="90" placeholder="17.423700" required></label><label>Longitude<input id="destination-lon" name="destination_lon" type="number" step="any" min="-180" max="180" placeholder="78.488100" required></label><button class="button subtle pick-button" id="pick-destination" type="button"><svg><use href="#i-pin"/></svg>Pick on map</button></div><div class="form-actions"><button id="start-trip" type="submit" class="button primary">▶ Start Trip</button><button id="stop-trip" type="button" class="button subtle" disabled>■ Stop Trip</button><span id="destination-summary" class="control-help">No active trip</span></div></form></article>
+      <article class="panel" id="geofence-controls"><div class="panel-heading"><div><h2><svg><use href="#i-fence"/></svg>Geofence zone</h2><p>A virtual boundary. Real-time awareness.</p></div><span class="step-number">02</span></div><form id="geofence-form" class="control-form"><div class="form-top"><label>Zone name<input id="fence-name" name="name" maxlength="100" placeholder="e.g. College Zone" required></label><button type="button" class="text-button" id="demo-fence">Use demo zone ↗</button></div><div class="coordinate-fields fence-fields"><label>Center latitude<input id="fence-lat" name="center_lat" type="number" step="any" min="-90" max="90" placeholder="17.417400" required></label><label>Center longitude<input id="fence-lon" name="center_lon" type="number" step="any" min="-180" max="180" placeholder="78.482500" required></label><label>Radius (m)<input id="fence-radius" name="radius_m" type="number" min="1" max="100000" step="any" value="100" required></label></div><div class="form-actions"><button type="submit" class="button primary">+ Create Geofence</button><button class="button subtle" id="pick-fence" type="button"><svg><use href="#i-pin"/></svg>Pick center</button></div></form><div class="fence-list" id="fences"><p class="empty">No geofence configured</p></div></article>
+    </section>
+    <section class="panel history-panel" id="history"><div class="panel-heading"><div><h2>Recent activity</h2><p>The latest GPS readings and completed journeys.</p></div><span class="history-note">Latest 12 records</span></div><div class="tabs" role="tablist" aria-label="History type"><button id="locations-tab" role="tab" aria-selected="true" aria-controls="locations-panel" type="button">GPS locations</button><button id="trips-tab" role="tab" aria-selected="false" aria-controls="trips-panel" type="button">Completed trips</button></div><div class="table-scroll" id="locations-panel" role="tabpanel" aria-labelledby="locations-tab"><table><caption class="sr-only">Recent GPS location history</caption><thead><tr><th>GPS timestamp</th><th>Latitude</th><th>Longitude</th><th>Speed</th><th>Source</th><th>Trip</th></tr></thead><tbody id="locations-body"><tr><td colspan="6" class="empty">Waiting for GPS data… Start the simulator to see your vehicle.</td></tr></tbody></table></div><div class="table-scroll" id="trips-panel" role="tabpanel" aria-labelledby="trips-tab" hidden><table><caption class="sr-only">Completed trip history</caption><thead><tr><th>Trip</th><th>Destination</th><th>Started</th><th>Completed</th><th>Distance</th><th>Status</th></tr></thead><tbody id="trips-body"><tr><td colspan="6" class="empty">No completed trips yet.</td></tr></tbody></table></div></section>
+    <footer class="page-footer"><span>FleetMitra <span>·</span> IoT-Based Smart Vehicle Tracking & Fleet Management</span><span>Software demo · Hardware untested</span></footer>
+  </main>
+</div>
+{% include 'journey_extensions.html' %}
+</body>
+</html>
