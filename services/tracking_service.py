@@ -39,6 +39,8 @@ def trip_dict(row):
         result["status"] = result["completion_status"]
     total = result.get("route_total_m", 0)
     result["progress_percent"] = min(100, max(0, result.get("route_progress_m", 0) / total * 100)) if total else 0
+    if result.get('completion_status') == 'ARRIVED':
+        result['progress_percent'] = 100
     return result
 
 
@@ -71,6 +73,11 @@ def vehicle_snapshot(vehicle_id):
                            current_app.config["MIN_ETA_SPEED_KMH"], stale, now)
         trip["eta"] = eta
         trip["remaining_distance_m"] = eta["remaining_distance_m"]
+    if not trip and latest and not stale:
+        completed = db.execute("SELECT * FROM trips WHERE vehicle_id=? ORDER BY trip_id DESC LIMIT 1", (vehicle_id,)).fetchone()
+        if completed and completed['completion_status']=='ARRIVED' and haversine(latest['lat'],latest['lon'],completed['destination_lat'],completed['destination_lon']) <= current_app.config['ARRIVAL_RADIUS_M']:
+            eta = {'status':'ARRIVED', 'method':'ROAD_ROUTE' if completed['route_id'] else 'FALLBACK',
+                   'remaining_distance_m':0, 'duration_seconds':0, 'arrival_time':completed['end_time']}
     return {"vehicle_id": vehicle_id, "location": location_dict(latest), "stale": stale,
             "trip": trip, "trip_status": "ACTIVE" if trip else "NO_ACTIVE_TRIP",
             "distance_travelled_km": trip["distance_km"] if trip else None,

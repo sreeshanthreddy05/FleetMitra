@@ -96,7 +96,7 @@
     const location = snapshot.location, trip = snapshot.trip, eta = snapshot.eta;
     set("source", location?.source || "NO DATA");
     $("source").className = `badge source-badge${location?.source === "HARDWARE" ? " hardware" : ""}`;
-    set("speed", location ? fixed(location.speed_kmh, 1) : "—");
+    set("speed", location && !snapshot.stale ? fixed(location.speed_kmh, 1) : "—");
     set("motion", !location ? "Waiting for GPS data" : snapshot.stale ? "GPS data stale · awaiting a new fix" : location.speed_kmh < 3 ? "Vehicle stationary" : "Vehicle moving");
     set("distance", trip ? fixed(trip.distance_km) : "—");
     set("trip-status", trip ? `ACTIVE · Trip #${trip.trip_id}` : "No active trip");

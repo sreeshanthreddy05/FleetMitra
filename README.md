@@ -1,5 +1,7 @@
 # FleetMitra
 
+**Trip recovery:** Fresh valid destination fixes now automatically close both road-route and legacy coordinate-only trips. Stale fixes cannot claim live arrival, and stale speed is hidden. Use **End Trip #…** beside the map to explicitly stop an abandoned trip while retaining its history; the confirmation does not claim arrival. FM01 and its driver become available after closure. Verified in the browser with a new driver-linked trip after recovering the original stuck trip; **208 tests passed**.
+
 **Port 5000 mismatch fixed:** The old dashboard was served by a stale Flask process sharing port 5000 with another process, not by missing feature files. Startup now binds the port exclusively before opening SQLite, prints the exact project/database/Python paths, and uses the local venv when launched with bare `python app.py`. Stop an existing server with Ctrl+C before starting another. Asset URLs are content-versioned and templates revalidate. See the latest section in [FLEETMITRA_PROGRESS_REPORT.md](FLEETMITRA_PROGRESS_REPORT.md). Verified on port 5000 with the original database: **204 tests passed**.
 
 **Saved-work audit (30 October 2026):** All final feature modules are saved in this checkout and were already included in Git commit f59f113. See [FLEETMITRA_AUDIT_REPORT.md](FLEETMITRA_AUDIT_REPORT.md). The default database and review database contain different records; use the launch commands below for the dataset you intend to review.

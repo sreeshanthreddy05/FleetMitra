@@ -41,12 +41,12 @@ def estimate_eta(straight_m, samples, route=None, arrival_radius_m=35, minimum_s
               "duration_seconds": None, "arrival_time": None,
               "average_speed_kmh": sum(samples) / len(samples) if samples else None,
               "geometry": route.get("geometry") if route else None}
+    if stale:
+        result['status'] = 'WAITING_FOR_GPS'
+        return result
     if straight_m <= arrival_radius_m:
         result.update(status="ARRIVED", remaining_distance_m=0.0, duration_seconds=0.0)
         result["arrival_time"] = (now or datetime.now(timezone.utc)).isoformat()
-        return result
-    if stale:
-        result["status"] = "WAITING_FOR_GPS"
         return result
     average = result["average_speed_kmh"]
     if not samples or samples[0] < minimum_speed or average < minimum_speed:

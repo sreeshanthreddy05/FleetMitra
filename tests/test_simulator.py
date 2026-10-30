@@ -45,12 +45,16 @@ def test_full_route_through_real_http(app, reading, monkeypatch):
         snapshot = http_json(url, "/api/vehicles/FM01/location")
         assert snapshot["location"]["source"] == "SIMULATED"
         assert snapshot["eta"]["status"] == "ARRIVED"
-        assert snapshot["trip"]["distance_m"] > 1500
+        assert snapshot['trip'] is None  # Arrival closes the trip without a manual stop.
+        completed = http_json(url, '/api/trips/history')['trips']
+        assert len(completed) == 1
+        assert completed[0]['distance_m'] > 1500
+        assert completed[0]['completion_status'] == 'ARRIVED'
+        assert completed[0]['progress_percent'] == 100
         events = http_json(url, "/api/geofences/events")["events"]
         assert [event["event_type"] for event in events] == ["EXIT", "ENTER"]
         assert len(http_json(url, "/api/vehicles/FM01/history?limit=500")["locations"]) == len(data["points"]) + 1
-        result = http_json(url, "/api/trips/stop", {"vehicle_id": "FM01"})
-        assert result["trip"]["status"] == "COMPLETED"
+        assert http_json(url, '/api/trips/current')['trip'] is None
         assert len(http_json(url, "/api/trips/history")["trips"]) == 1
 
 

@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 
 from database import get_db
 from services.tracking_service import active_trip, latest_location, trip_dict, vehicle_snapshot
@@ -48,12 +48,15 @@ def start():
 @bp.post("/api/trips/stop")
 def stop():
     db = get_db()
-    vehicle_id = vehicle_exists(db, json_body().get("vehicle_id"))
-    with db:
+    data = json_body()
+    vehicle_id = vehicle_exists(db, data.get("vehicle_id"))
+    with current_app.extensions['simulation'].lock, db:
         db.execute("BEGIN IMMEDIATE")
         trip = active_trip(db, vehicle_id)
         if not trip:
             raise APIError("No active trip to stop", 409)
+        if data.get('trip_id') is not None and data['trip_id'] != trip['trip_id']:
+            raise APIError('Active trip changed. Refresh before ending it.', 409)
         db.execute("UPDATE trips SET status = 'COMPLETED', end_time = ? WHERE trip_id = ?",
                    (utc_now(), trip["trip_id"]))
         db.execute("UPDATE simulation_sessions SET state = 'STOPPED' WHERE trip_id = ?", (trip["trip_id"],))

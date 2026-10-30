@@ -7,6 +7,10 @@
   document.querySelector('.tracking-grid').prepend($('destination-change'));
   const change=node('button','Change Destination');change.id='change-destination';change.className='button primary';change.disabled=true;
   document.querySelector('.map-panel .panel-heading').append(change);
+  const endTrip=node('button','End Trip');endTrip.id='end-active-trip';endTrip.className='button subtle';endTrip.disabled=true;
+  document.querySelector('.map-panel .panel-heading').append(endTrip);
+  endTrip.onclick=async()=>{const trip=activeTrip;if(!trip||!confirm(`End Trip #${trip.trip_id} as STOPPED? Saved GPS samples, distance and history will be retained. This does not claim arrival.`))return;endTrip.disabled=true;try{await api('/api/trips/stop',{vehicle_id:trip.vehicle_id,trip_id:trip.trip_id});endTrip.textContent='Trip ended';}catch(error){endTrip.textContent=error.message;endTrip.disabled=false;}};
+  document.addEventListener('fleet:update',event=>{const trip=event.detail.vehicle.trip;endTrip.disabled=!trip;endTrip.textContent=trip?'End Trip #'+trip.trip_id:'End Trip';});
   let registry=[],activeTrip=null,registryBusy=false,draft=null,proposal=null,selectedRoute=null,generation=0,busy=false,activating=false;
   let searchTimer,searchController,searchRevision=0,searchItems=[],searchIndex=-1,pathKey='';
   async function api(url,data){const response=await fetch(url,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data),signal:AbortSignal.timeout(15000)});const result=await response.json();if(!response.ok){const error=new Error(result.error||'Request failed');error.status=response.status;throw error;}return result;}

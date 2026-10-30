@@ -11,7 +11,13 @@ from validation import utc_now
 
 
 def monitor_route(db, location, trip):
-    if not trip or not trip["route_id"]:
+    if not trip:
+        return
+    if not location.get('timestamp') or (datetime.now(timezone.utc) - datetime.fromisoformat(location['timestamp'])).total_seconds() > current_app.config['STALE_AFTER_SECONDS']:
+        return
+    if not trip['route_id']:
+        if haversine(location['lat'], location['lon'], trip['destination_lat'], trip['destination_lon']) <= current_app.config['ARRIVAL_RADIUS_M']:
+            complete_arrival(db, location, trip)
         return
     route = db.execute("SELECT * FROM route_plans WHERE route_id = ?", (trip["route_id"],)).fetchone()
     nearest = project(route["geometry_json"], location["lat"], location["lon"])
@@ -37,12 +43,16 @@ def monitor_route(db, location, trip):
     db.execute("UPDATE trips SET route_status = ?, off_route_count = ?, route_progress_m = ? WHERE trip_id = ?",
                (state, count, min(trip["route_total_m"], progress), trip["trip_id"]))
     if arrived:
-        db.execute("UPDATE trips SET status = 'COMPLETED', completion_status = 'ARRIVED', "
+        complete_arrival(db, location, trip)
+
+
+def complete_arrival(db, location, trip):
+    db.execute("UPDATE trips SET status = 'COMPLETED', completion_status = 'ARRIVED', "
                    "route_status = 'ARRIVED', end_reason = 'DESTINATION_REACHED', route_progress_m = route_total_m, end_time = ? WHERE trip_id = ?",
                    (utc_now(), trip["trip_id"]))
-        db.execute("UPDATE simulation_sessions SET state = 'ARRIVED', updated_at = ? WHERE trip_id = ?",
+    db.execute("UPDATE simulation_sessions SET state = 'ARRIVED', updated_at = ? WHERE trip_id = ?",
                    (utc_now(), trip["trip_id"]))
-        record_event(db, location["vehicle_id"], trip["trip_id"], "DESTINATION_REACHED",
+    record_event(db, location["vehicle_id"], trip["trip_id"], "DESTINATION_REACHED",
                      "Destination reached", "FM01 has reached the selected destination.", "SUCCESS", True,
                      dedupe_key=f"arrival:{trip['trip_id']}")
 
